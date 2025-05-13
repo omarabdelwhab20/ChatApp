@@ -6,6 +6,8 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { JwtModule } from '@nestjs/jwt';
+import { ChatModule } from './chat/chat.module';
+import { MessageModule } from './message/message.module';
 
 
 @Module({
@@ -13,7 +15,7 @@ import { JwtModule } from '@nestjs/jwt';
   ConfigModule.forRoot(),
   JwtModule.register({
     global : true,
-    secret: process.env.SECRET_KEY,
+    secret: process.env.JWT_SECRET,
     signOptions: { expiresIn: '24h' },
   }),
   TypeOrmModule.forRoot({
@@ -35,7 +37,9 @@ import { JwtModule } from '@nestjs/jwt';
         },
       }
   }),
-  AuthModule],
+  AuthModule,
+  ChatModule,
+  MessageModule],
   controllers: [AppController],
   providers: [AppService],
   

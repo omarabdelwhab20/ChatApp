@@ -1,6 +1,6 @@
 import { IsEmail, IsNotEmpty, MaxLength, MinLength } from "class-validator";
 
-export class SignUpDto {
+export class SignInDto {
 
 
     @IsNotEmpty({message : "Password is required"})
