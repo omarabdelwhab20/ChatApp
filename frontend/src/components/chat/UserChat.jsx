@@ -1,11 +1,20 @@
-import { useFetchRecipient } from "../../hooks/useFetchRecipient";
+import { useFetchRecipient } from "../../hooks/useFetchRecipient.js";
 import { Stack } from "react-bootstrap";
 import avatar from "../../assets/avatar.svg";
+import { Spinner } from "react-bootstrap";
 
 export const UserChat = ({ chat, user }) => {
-  const { recipientUser } = useFetchRecipient(chat, user);
+  const { recipientUser, isLoading } = useFetchRecipient(chat, user);
 
-  console.log("recipientUser", recipientUser);
+
+
+  if (isLoading) {
+    return (
+      <Stack className="justify-content-center align-items-center p-2">
+        <Spinner animation="border" size="sm" />
+      </Stack>
+    );
+  }
 
   return (
     <Stack
@@ -19,7 +28,13 @@ export const UserChat = ({ chat, user }) => {
           <img src={avatar} height="35px" alt="" />
         </div>
         <div className="text-content">
-          <div className="name">{recipientUser?.fullName}</div>
+          <div className="name">
+            {recipientUser?.fullName ||
+              `User ${chat?.members
+                ?.find((id) => id !== user?.id)
+                ?.slice(0, 4)}` ||
+              "Unknown User"}
+          </div>
           <div className="text">Text Messages</div>
         </div>
       </div>

@@ -2,7 +2,7 @@
 export const verifyEmail = async (token) => {
   try {
     const response = await fetch(
-      `${import.meta.env.VITE_SERVER_URL}/auth/verify-email/${token}`,
+      `${import.meta.env.VITE_SERVER_URL}auth/verify-email/${token}`,
       {
         method: "GET",
         headers: {

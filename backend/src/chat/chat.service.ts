@@ -59,10 +59,13 @@ export class ChatService {
   // src/chat/chat.service.ts
   async findUserChats(userId: string) {
     try {
-      // Option 1: Using query builder with proper array syntax
+      // CORRECT QUERY - use UNNEST for proper array searching
       const chats = await this.chatRepository
         .createQueryBuilder('chat')
-        .where(':userId = ANY(chat.members)', { userId })
+        .where(
+          'EXISTS (SELECT 1 FROM UNNEST(chat.members) AS member WHERE member = :userId)',
+          { userId },
+        )
         .getMany();
 
       return {
@@ -74,17 +77,21 @@ export class ChatService {
       throw new InternalServerErrorException('Failed to fetch chats');
     }
   }
-
   async findOneChat(currentUserId: string, otherUserId: string) {
     try {
-      // Find chat containing exactly these two users
-      const chat = await this.chatRepository
+      const query = this.chatRepository
         .createQueryBuilder('chat')
-        .where(`chat.members LIKE :user1`, { user1: `%${currentUserId}%` })
-        .andWhere(`chat.members LIKE :user2`, { user2: `%${otherUserId}%` })
-        .getOne();
+        .where('chat.members @> ARRAY[:user1, :user2]', {
+          user1: currentUserId,
+          user2: otherUserId,
+        });
+
+      const sql = query.getQuery();
+
+      const chat = await query.getOne();
 
       if (!chat) {
+        console.log('No chat found. Database might have different format.');
         return {
           status: HttpStatus.NOT_FOUND,
           message: 'No chat found between these users',
@@ -96,7 +103,7 @@ export class ChatService {
         data: chat,
       };
     } catch (error) {
-      console.error('Error finding chat:', error);
+      console.error('Database error:', error);
       return {
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         message: 'Failed to find chat',

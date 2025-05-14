@@ -1,44 +1,51 @@
 import { useEffect, useState } from "react";
 import { getRequest } from "../utils/services";
 
-// useFetchRecipient.js
 export const useFetchRecipient = (chat, user) => {
   const [recipientUser, setRecipientUser] = useState(null);
   const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-
+  const [isLoading, setIsLoading] = useState(true); // Initialize as true
   const recipientId = chat?.members?.find((id) => id !== user?.id);
 
+
+
   useEffect(() => {
+    let isMounted = true; // Cleanup flag
+
     const fetchRecipient = async () => {
       if (!recipientId) {
-        setRecipientUser(null);
+        setIsLoading(false);
         return;
       }
 
-      setIsLoading(true);
-      setError(null);
-
       try {
+        setIsLoading(true);
         const response = await getRequest(
           `${import.meta.env.VITE_SERVER_URL}auth/find-user/${recipientId}`
         );
 
-        if (response.error || !response.data) {
-          throw new Error(response.message || "Recipient not found");
+        if (isMounted) {
+          if (response.error) {
+            throw new Error(response.message || "Failed to fetch recipient");
+          }
+          setRecipientUser(response.data || response);
         }
-
-        setRecipientUser(response.data); // Now using response.data
       } catch (err) {
-        setError(err);
-        setRecipientUser(null);
+        if (isMounted) {
+          setError(err.message || "Unknown error occurred");
+          console.error("Fetch recipient error:", err);
+        }
       } finally {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     };
 
     fetchRecipient();
-  }, [recipientId]);
+
+    return () => {
+      isMounted = false; // Cleanup on unmount
+    };
+  }, [chat?.members, user?.id , recipientId]); // Depend on these values
 
   return { recipientUser, isLoading, error };
 };

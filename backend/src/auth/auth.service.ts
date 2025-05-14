@@ -1,7 +1,12 @@
-import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { SignInDto } from './dto/sign-in.dto';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
@@ -139,26 +144,26 @@ export class AuthService {
     }
 
     const token = await this.jwtService.signAsync(
-    {
-      sub: isFound.id, // Standard JWT subject claim
-      email: isFound.email,
-      fullName: isFound.fullName
-    },
-    {
-      secret: process.env.JWT_SECRET,
-      expiresIn: '1d' // Explicit expiration
-    }
-  );
+      {
+        id: isFound.id, // Standard JWT subject claim
+        email: isFound.email,
+        fullName: isFound.fullName,
+      },
+      {
+        secret: process.env.JWT_SECRET,
+        expiresIn: '1d', // Explicit expiration
+      },
+    );
 
     return {
       status: HttpStatus.OK,
       message: 'Login successfully',
       token,
-      user : {
-        id : isFound.id,
-        email : isFound.email,
-        fullName : isFound.fullName
-      }
+      user: {
+        id: isFound.id,
+        email: isFound.email,
+        fullName: isFound.fullName,
+      },
     };
   }
 
@@ -247,28 +252,31 @@ export class AuthService {
     };
   }
 
+  async findUser(userId) {
+    const user = await this.userRepository.findOneBy({ id: userId });
 
-  async findUser(userId){
-    const user = await this.userRepository.findOneBy({id : userId})
-
-    if(!user){
-      throw new NotFoundException("User not found")
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
 
     return {
-      id : user.id,
-      fullName : user.fullName,
-      email : user.email
-    }
+      id: user.id,
+      fullName: user.fullName,
+      email: user.email,
+    };
   }
 
-  async findAllUsers(){
-    const users = await this.userRepository.find()
+  async findAllUsers(currentUserId : string) {
+    const users = await this.userRepository.find({
+      select: ['id', 'fullName', 'email'],
+      where: {
+        isVerified: true,
+        id : Not(currentUserId)
+      },
+    });
+
     return {
-      status : HttpStatus.OK,
-      data : {
-        users
-      }
-    }
+      users
+    };
   }
 }

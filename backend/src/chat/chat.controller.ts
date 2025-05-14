@@ -34,7 +34,8 @@ export class ChatController {
 
   @Get('with/:userId')
   getChatWithUser(@Req() req, @Param('userId') otherUserId: string) {
-    const currentUserId = req.user.id; // From authentication
+    const currentUserId = req.user.id;
+
     return this.chatService.findOneChat(currentUserId, otherUserId);
   }
 }

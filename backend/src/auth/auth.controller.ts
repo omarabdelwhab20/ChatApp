@@ -1,9 +1,19 @@
-import { Controller, Get, Post, Body, Query, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Query,
+  Param,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignUpDto } from './dto/sign-up.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { SignInDto } from './dto/sign-in.dto';
+import { AuthGuard } from './auth.guard';
 
 @Controller('auth/')
 export class AuthController {
@@ -40,6 +50,7 @@ export class AuthController {
   }
 
   @Get('find-user/:userId')
+  @UseGuards(AuthGuard)
   async findUser(@Param('userId') userId: string) {
     const user = await this.authService.findUser(userId);
     return {
@@ -49,7 +60,8 @@ export class AuthController {
   }
 
   @Get('find-all')
-  findAllUsers() {
-    return this.authService.findAllUsers();
+  @UseGuards(AuthGuard)
+  findAllUsers(@Req() req) {
+    return this.authService.findAllUsers(req.user.id);
   }
 }

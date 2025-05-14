@@ -16,11 +16,7 @@ export class AuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
 
-    console.log('Authorization Header:', request.headers.authorization); // Debug
-    console.log('Extracted Token:', token); // Debug
-
     if (!token) {
-      console.error('No token provided');
       throw new UnauthorizedException('No token provided');
     }
 
@@ -33,7 +29,6 @@ export class AuthGuard implements CanActivate {
       request.user = payload;
       return true;
     } catch (error) {
-      console.error('Token verification failed:', error.message); // Debug
       throw new UnauthorizedException('Invalid or expired token');
     }
   }

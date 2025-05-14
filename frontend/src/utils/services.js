@@ -1,10 +1,13 @@
 export const postRequest = async (url, body) => {
   try {
+    const token = localStorage.getItem("token"); // Get token from storage
     const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`, // Add this line
       },
+
       body: JSON.stringify(body), // Only stringify here
     });
 
@@ -29,7 +32,6 @@ export const postRequest = async (url, body) => {
 // services.js - Update getRequest
 export const getRequest = async (url) => {
   const token = localStorage.getItem("token");
-  console.log("Token:", localStorage.getItem("token"));
   const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${token}`,

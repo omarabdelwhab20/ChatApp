@@ -20,35 +20,27 @@ export const AuthContextProvider = ({ children }) => {
     password: "",
   });
 
-  console.log("registerInfo", registerInfo);
-  console.log("loginInfo", loginInfo);
-  useEffect(() => {
 
+  useEffect(() => {
     const token = localStorage.getItem("token");
     const user = localStorage.getItem("user");
 
-
     if (token && user) {
       try {
-        setUser(JSON.parse(user)); 
+        setUser(JSON.parse(user));
       } catch {
-        localStorage.removeItem("user"); 
+        localStorage.removeItem("user");
       }
     }
 
-
     const handleStorageChange = (e) => {
       if (e.key === "token" && !e.newValue) {
-        setUser(null); 
+        setUser(null);
       }
     };
     window.addEventListener("storage", handleStorageChange);
 
-
-    setUser(JSON.parse(user));
-
     return () => window.removeEventListener("storage", handleStorageChange);
-
   }, []);
 
   const updateRegisterInfo = useCallback((info) => {
@@ -66,7 +58,7 @@ export const AuthContextProvider = ({ children }) => {
       setRegisterError(null);
       try {
         const response = await postRequest(
-          `${import.meta.env.VITE_SERVER_URL}/auth/sign-up`,
+          `${import.meta.env.VITE_SERVER_URL}auth/sign-up`,
           registerInfo
         );
 
@@ -96,8 +88,8 @@ export const AuthContextProvider = ({ children }) => {
 
       try {
         const response = await postRequest(
-          `${import.meta.env.VITE_SERVER_URL}/auth/sign-in`,
-          loginInfo // Changed from registerInfo to loginInfo
+          `${import.meta.env.VITE_SERVER_URL}auth/sign-in`,
+          loginInfo
         );
 
         if (response.error) {
@@ -105,8 +97,12 @@ export const AuthContextProvider = ({ children }) => {
           return;
         }
 
+
+
         localStorage.setItem("token", response.token);
         localStorage.setItem("user", JSON.stringify(response.user));
+
+
 
         setUser(response.user);
       } catch (error) {
